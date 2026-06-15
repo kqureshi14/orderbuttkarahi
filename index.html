@@ -608,47 +608,15 @@ if (tableFromQR) {
   banner.classList.add('visible');
 }
 
-// Fetch menu from Odoo
 async function loadMenu() {
   try {
-    // Fetch categories
-    const catRes = await fetch(`${ODOO_URL}/web/dataset/call_kw`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0', method: 'call', id: 1,
-        params: {
-          model: 'pos.category',
-          method: 'search_read',
-          args: [[['name', 'not in', ['Extra Charges']]]],
-          kwargs: { fields: ['id', 'name'], order: 'sequence,name', limit: 50 }
-        }
-      })
-    });
-    const catData = await catRes.json();
-    categories = catData.result || [];
-
-    // Fetch products
-    const prodRes = await fetch(`${ODOO_URL}/web/dataset/call_kw`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0', method: 'call', id: 2,
-        params: {
-          model: 'product.template',
-          method: 'search_read',
-          args: [[['available_in_pos', '=', true], ['name', 'not in', ['Discount']]]],
-          kwargs: {
-            fields: ['id', 'name', 'list_price', 'image_128', 'pos_categ_ids'],
-            limit: 200
-          }
-        }
-      })
-    });
-    const prodData = await prodRes.json();
-    const allProducts = prodData.result || [];
-
+    const res = await fetch('https://n8n.octate.ooo/webhook/buttkarahi-menu');
+    const data = await res.json();
+    
+    categories = data.categories || [];
+    
     // Index products by category
+    const allProducts = data.products || [];
     allProducts.forEach(p => {
       p.pos_categ_ids.forEach(catId => {
         if (!products[catId]) products[catId] = [];
@@ -717,9 +685,8 @@ function renderSection(catName, prods) {
 
 function renderProduct(p) {
   const inCart = cart[p.id];
-  const imgSrc = p.image_128
-    ? `${ODOO_URL}/web/image/product.template/${p.id}/image_128`
-    : null;
+
+  const imgSrc = p.image_url || null;
 
   const imgHTML = imgSrc
     ? `<img src="${imgSrc}" alt="${p.name}" onerror="this.parentElement.innerHTML='🍽️'">`
