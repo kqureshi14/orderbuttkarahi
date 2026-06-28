@@ -528,7 +528,7 @@
     <div class="input-row">
       <input type="text" id="tableInput" placeholder="Table Number" />
       <input type="text" id="nameInput" placeholder="Your Name (optional)" />
-      <input type="tel" id="phoneInput" placeholder="Phone (for confirmation)" />
+      <input type="tel" id="phoneInput" placeholder="Phone Number *" required />
     </div>
   </div>
 
@@ -796,6 +796,11 @@ async function placeOrder() {
   }
   if (items.length === 0) {
     errorEl.textContent = 'Your cart is empty.';
+    errorEl.classList.add('visible');
+    return;
+  }
+  if (!phone) {
+    errorEl.textContent = 'Please enter your phone number for order confirmation.';
     errorEl.classList.add('visible');
     return;
   }
